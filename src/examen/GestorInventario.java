@@ -22,8 +22,8 @@ public class GestorInventario {
     private ArrayList<Producto> inventario;
     private String nombre;
 
-    public GestorInventario(ArrayList<Producto> inventario, String nombre) {
-        this.inventario = inventario;
+    public GestorInventario(String nombre) {
+        this.inventario = new ArrayList<>();
         this.nombre = nombre;
     }
 
