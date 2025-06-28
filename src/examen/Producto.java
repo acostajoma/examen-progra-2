@@ -52,7 +52,11 @@ public class Producto {
     public void setCantidad(int cantidad) {
         this.cantidad = cantidad;
     }
-
+    
+    public String darFormatoProducto(){
+        return nombre+";"+categoria+";"+precio+";"+cantidad;
+    }
+    
     @Override
     public String toString() {
         return "Producto{" + "nombre=" + nombre + ", categoria=" + categoria + ", precio=" + precio + ", cantidad=" + cantidad + '}';

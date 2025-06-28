@@ -4,33 +4,59 @@
  */
 package examen;
 
-import javax.swing.table.DefaultTableModel;
+import java.awt.event.ActionEvent;
+import javax.swing.Action;
+import javax.swing.AbstractAction;
+
 
 /**
  *
  * @author joseacosta
  */
 public class JFrame extends javax.swing.JFrame {
-    
-    private final String[] nombresColumnas = {"Nombre", "Categoría", "Cantidad", "Precio"};
-    private Object[][] datos;
-    private DefaultTableModel model;
-
-    public JFrame(Object[][] datos, DefaultTableModel model) {
-        this.datos = datos;
-        this.model = model;
-    }
-
-    
-    
+    private GestorInventario gestor; // Declaramos la clase de gestor
+    private ModeloTablaInventario modeloTabla; // Declaramos la clase de la tabla
 
     /**
      * Creates new form JFrame
      */
     public JFrame() {
+        gestor = new GestorInventario("inventario.txt");
         initComponents();
     }
 
+      /**
+     * Configura el JTable, le asigna el modelo y los editores de botones.
+     */
+    private void configurarTabla() {
+        modeloTabla = new ModeloTablaInventario(gestor.getInventario());
+        tablaInventario.setModel(modeloTabla);
+
+        // Acción para el botón de editar
+        Action editarAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                int modelRow = Integer.parseInt(e.getActionCommand());
+                editarProducto(modelRow);
+            }
+        };
+
+        // Acción para el botón de eliminar
+        Action eliminarAction = new AbstractAction() {
+            public void actionPerformed(ActionEvent e) {
+                int modelRow = Integer.parseInt(e.getActionCommand());
+                eliminarProducto(modelRow);
+            }
+        };
+
+        // Asignamos el renderizador/editor a las columnas de botones
+        new ButtonColumn(panel, editarAction, 4); // Columna 4 para Editar
+        new ButtonColumn(panel, eliminarAction, 5); // Columna 5 para Eliminar
+        
+        // Opcional: ajustar el ancho de las columnas de botones
+        panel.getColumnModel().getColumn(4).setPreferredWidth(50);
+        panel.getColumnModel().getColumn(5).setPreferredWidth(60);
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -40,11 +66,41 @@ public class JFrame extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        botonAgregar = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tablaProductos = new javax.swing.JTable();
+        panel = new javax.swing.JScrollPane();
+        tablaInventario = new javax.swing.JTable();
+        barraSuperior = new javax.swing.JMenuBar();
+        botonArchivo = new javax.swing.JMenu();
+        botonSalir = new javax.swing.JMenuItem();
+        botonOperaciones = new javax.swing.JMenu();
+        botonAgregar = new javax.swing.JMenuItem();
+        botonModificar = new javax.swing.JMenuItem();
+        botonEliminar = new javax.swing.JMenuItem();
+        botonBuscar = new javax.swing.JMenuItem();
+        botonListar = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        tablaInventario.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        panel.setViewportView(tablaInventario);
+
+        botonArchivo.setText("Archivo");
+
+        botonSalir.setText("Salir");
+        botonArchivo.add(botonSalir);
+
+        barraSuperior.add(botonArchivo);
+
+        botonOperaciones.setText("Operaciones");
 
         botonAgregar.setText("Agregar");
         botonAgregar.addActionListener(new java.awt.event.ActionListener() {
@@ -52,32 +108,38 @@ public class JFrame extends javax.swing.JFrame {
                 botonAgregarActionPerformed(evt);
             }
         });
+        botonOperaciones.add(botonAgregar);
 
-        tablaProductos.setModel(Producto);
-        jScrollPane1.setViewportView(tablaProductos);
+        botonModificar.setText("Modificar");
+        botonOperaciones.add(botonModificar);
+
+        botonEliminar.setText("Eliminar");
+        botonOperaciones.add(botonEliminar);
+
+        botonBuscar.setText("Buscar Por Nombre");
+        botonOperaciones.add(botonBuscar);
+
+        botonListar.setText("Listar por Categoría");
+        botonListar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botonListarActionPerformed(evt);
+            }
+        });
+        botonOperaciones.add(botonListar);
+
+        barraSuperior.add(botonOperaciones);
+
+        setJMenuBar(barraSuperior);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(28, 28, 28)
-                        .addComponent(botonAgregar))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(55, 55, 55)
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(119, Short.MAX_VALUE))
+            .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap(58, Short.MAX_VALUE)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(28, 28, 28)
-                .addComponent(botonAgregar)
-                .addGap(24, 24, 24))
+            .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)
         );
 
         pack();
@@ -86,6 +148,10 @@ public class JFrame extends javax.swing.JFrame {
     private void botonAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonAgregarActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_botonAgregarActionPerformed
+
+    private void botonListarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonListarActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_botonListarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -123,8 +189,16 @@ public class JFrame extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton botonAgregar;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTable tablaProductos;
+    private javax.swing.JMenuBar barraSuperior;
+    private javax.swing.JMenuItem botonAgregar;
+    private javax.swing.JMenu botonArchivo;
+    private javax.swing.JMenuItem botonBuscar;
+    private javax.swing.JMenuItem botonEliminar;
+    private javax.swing.JMenuItem botonListar;
+    private javax.swing.JMenuItem botonModificar;
+    private javax.swing.JMenu botonOperaciones;
+    private javax.swing.JMenuItem botonSalir;
+    private javax.swing.JScrollPane panel;
+    private javax.swing.JTable tablaInventario;
     // End of variables declaration//GEN-END:variables
 }
