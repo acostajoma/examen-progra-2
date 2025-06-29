@@ -25,6 +25,7 @@ public class GestorInventario {
     public GestorInventario(String nombre) {
         this.inventario = new ArrayList<>();
         this.nombre = nombre;
+        cargarInventario();
     }
 
     public ArrayList<Producto> getInventario() {
@@ -115,9 +116,10 @@ public class GestorInventario {
                 //Revisamos que el largo sea de 4
                 if (datos.length == 4) {
                     String nombreProducto = datos[0];
-                    int cantidad = Integer.parseInt(datos[1]);
+                    String categoria = datos[1];
                     double precio = Double.parseDouble(datos[2]);
-                    String categoria = datos[3];
+                    int cantidad = Integer.parseInt(datos[3]);
+
                     inventario.add(new Producto(nombreProducto, categoria, precio, cantidad));
                 }
             }

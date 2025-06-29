@@ -14,30 +14,46 @@ import javax.swing.table.AbstractTableModel;
  */
 public class ModeloTablaInventario extends AbstractTableModel {
     private ArrayList<Producto> inventario;
-    private final String[] columnas = {"Nombre", "Cantidad", "Precio", "Categoría", "Editar", "Eliminar"};
-
+    private final String[] columnas = {
+        "Nombre", "Cantidad", "Precio", "Categoría"
+    };
     public ModeloTablaInventario(ArrayList<Producto> inventario) {
         this.inventario = inventario;
     }
 
-     /**
-     * Permite que las celdas de las columnas donde estan los botones sean clickeables.
-     */
-    @Override
-    public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return columnIndex == 4 || columnIndex == 5;
+    
+    /**
+    * Busca un producto por su nombre y devuelve su índice en la tabla.
+    * @param nombre El nombre del producto a buscar.
+    * @return El índice de la fila (0 o más) si se encuentra, o -1 si no existe.
+    */
+public int encuentraIndiceFilaPorNombre(String nombre) {
+    for (int i = 0; i < inventario.size(); i++) {
+        if (inventario.get(i).getNombre().equalsIgnoreCase(nombre)) {
+            return i; // Devuelve el índice si encuentra el producto
+        }
     }
+    return -1; // Devuelve -1 si no lo encuentra
+}
 
     @Override
     public int getRowCount() {
         return inventario.size();
     }
-
+    
+    // Devuelve el largo de columnas de la tabla
     @Override
     public int getColumnCount() {
         return columnas.length;
     }
+    
+    // Devuelve el nombre de una columna en base al indice de la columna
+    @Override
+    public String getColumnName(int columnIndex) {
+        return columnas[columnIndex];
+    }
 
+    // Devuelve el valor de una celda en base a # de fila y # columna
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         // Obtenemos el producto en base al rowindex
@@ -48,20 +64,14 @@ public class ModeloTablaInventario extends AbstractTableModel {
             case 1 -> producto.getCantidad();
             case 2 -> producto.getPrecio();
             case 3 -> producto.getCategoria();
-            case 4 -> "Editar"; // Texto para el botón de editar
-            case 5 -> "Eliminar"; // Texto para el botón de eliminar
             default -> null;
         };
     }
+     
+    // Ninguna celda es editable directamente en la tabla.
     
-     /**
-     * Especifica que las columnas 4 y 5 se renderizarán como botones.
-     */
     @Override
-    public Class<?> getColumnClass(int columnIndex) {
-        if (columnIndex == 4 || columnIndex == 5) {
-            return JButton.class; 
-        }
-        return super.getColumnClass(columnIndex);
+    public boolean isCellEditable(int rowIndex, int columnIndex) {
+        return false;
     }
 }
