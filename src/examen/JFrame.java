@@ -4,16 +4,20 @@
  */
 package examen;
 
-import java.awt.event.ActionEvent;
-import javax.swing.Action;
-import javax.swing.AbstractAction;
-
+import java.awt.GridLayout;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.table.TableRowSorter;
 
 /**
  *
  * @author joseacosta
  */
 public class JFrame extends javax.swing.JFrame {
+
     private GestorInventario gestor; // Declaramos la clase de gestor
     private ModeloTablaInventario modeloTabla; // Declaramos la clase de la tabla
 
@@ -22,41 +26,116 @@ public class JFrame extends javax.swing.JFrame {
      */
     public JFrame() {
         gestor = new GestorInventario("inventario.txt");
+
         initComponents();
+        configurarTabla();
+
+        this.setTitle("Gestor de Inventario Principal");
+        this.setLocationRelativeTo(null);
+
+        actualizarTabla();
     }
 
-      /**
-     * Configura el JTable, le asigna el modelo y los editores de botones.
+    /**
+     * Configura el JTable y le asigna el modelo.
      */
     private void configurarTabla() {
         modeloTabla = new ModeloTablaInventario(gestor.getInventario());
         tablaInventario.setModel(modeloTabla);
-
-        // Acción para el botón de editar
-        Action editarAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                int modelRow = Integer.parseInt(e.getActionCommand());
-                editarProducto(modelRow);
-            }
-        };
-
-        // Acción para el botón de eliminar
-        Action eliminarAction = new AbstractAction() {
-            public void actionPerformed(ActionEvent e) {
-                int modelRow = Integer.parseInt(e.getActionCommand());
-                eliminarProducto(modelRow);
-            }
-        };
-
-        // Asignamos el renderizador/editor a las columnas de botones
-        new ButtonColumn(panel, editarAction, 4); // Columna 4 para Editar
-        new ButtonColumn(panel, eliminarAction, 5); // Columna 5 para Eliminar
-        
-        // Opcional: ajustar el ancho de las columnas de botones
-        panel.getColumnModel().getColumn(4).setPreferredWidth(50);
-        panel.getColumnModel().getColumn(5).setPreferredWidth(60);
+        // Permitir seleccionar solo una fila a la vez
+        tablaInventario.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        TableRowSorter<ModeloTablaInventario> filtro = new TableRowSorter<>(modeloTabla);
+        tablaInventario.setRowSorter(filtro);
     }
-    
+
+    public final void actualizarTabla() {
+        modeloTabla.fireTableDataChanged();
+    }
+
+    /**
+     * Lógica para editar un producto. Se activa desde el botón de la tabla.
+     *
+     * @param rowIndex La fila del modelo que se va a editar.
+     */
+    public void editarProducto(int rowIndex) {
+        Producto productoAEditar = gestor.getInventario().get(rowIndex);
+
+        JTextField nombreField = new JTextField(productoAEditar.getNombre(), 15);
+        JTextField cantidadField = new JTextField(String.valueOf(productoAEditar.getCantidad()), 5);
+        JTextField precioField = new JTextField(String.valueOf(productoAEditar.getPrecio()), 10);
+        JTextField categoriaField = new JTextField(productoAEditar.getCategoria(), 15);
+
+        JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
+        panel.add(new JLabel("Nombre:"));
+        panel.add(nombreField);
+        panel.add(new JLabel("Cantidad:"));
+        panel.add(cantidadField);
+        panel.add(new JLabel("Precio:"));
+        panel.add(precioField);
+        panel.add(new JLabel("Categoría:"));
+        panel.add(categoriaField);
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "Editar Producto",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                // Validación similar a la de agregar...
+                Producto productoModificado = new Producto(
+                        nombreField.getText(),
+                        categoriaField.getText(),
+                        Double.parseDouble(precioField.getText()),
+                        Integer.parseInt(cantidadField.getText())
+                );
+                gestor.modificarProducto(productoAEditar.getNombre(), productoModificado);
+                actualizarTabla();
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Valores numéricos inválidos.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
+    }
+
+    public void editarProductoAccion() {
+        int viewRow = tablaInventario.getSelectedRow();
+
+        if (viewRow == -1) {
+            JOptionPane.showMessageDialog(this, "Por favor, seleccione una fila para editar.", "Ninguna Fila Seleccionada", JOptionPane.WARNING_MESSAGE);
+        } else {
+            // Es importante convertir el índice de la vista al del modelo, por si la tabla se ordena.
+            int modelRow = tablaInventario.convertRowIndexToModel(viewRow);
+            editarProducto(modelRow);
+        }
+    }
+
+    /**
+     * Lógica para eliminar un producto. Se activa desde el botón de la tabla.
+     *
+     * @param rowIndex La fila del modelo que se va a eliminar.
+     */
+    public void eliminarProducto(int rowIndex) {
+        Producto productoAEliminar = gestor.getInventario().get(rowIndex);
+        int confirm = JOptionPane.showConfirmDialog(this,
+                "¿Estás seguro de que quieres eliminar el producto '" + productoAEliminar.getNombre() + "'?",
+                "Confirmar Eliminación",
+                JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            gestor.eliminarProducto(productoAEliminar.getNombre());
+            actualizarTabla();
+        }
+    }
+
+    public void eliminarProductoAccion() {
+        int viewRow = tablaInventario.getSelectedRow();
+
+        if (viewRow == -1) {
+            JOptionPane.showMessageDialog(this, "Por favor, seleccione una fila para eliminar.", "Ninguna Fila Seleccionada", JOptionPane.WARNING_MESSAGE);
+        } else {
+            int modelRow = tablaInventario.convertRowIndexToModel(viewRow);
+            eliminarProducto(modelRow);
+        }
+    }
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -68,6 +147,9 @@ public class JFrame extends javax.swing.JFrame {
 
         panel = new javax.swing.JScrollPane();
         tablaInventario = new javax.swing.JTable();
+        jPanel1 = new javax.swing.JPanel();
+        botonPanelModificar = new javax.swing.JButton();
+        botonPanelEliminar = new javax.swing.JButton();
         barraSuperior = new javax.swing.JMenuBar();
         botonArchivo = new javax.swing.JMenu();
         botonSalir = new javax.swing.JMenuItem();
@@ -93,6 +175,41 @@ public class JFrame extends javax.swing.JFrame {
         ));
         panel.setViewportView(tablaInventario);
 
+        botonPanelModificar.setText("Editar Producto");
+        botonPanelModificar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botonPanelModificarActionPerformed(evt);
+            }
+        });
+
+        botonPanelEliminar.setText("Eliminar Producto");
+        botonPanelEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botonPanelEliminarActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(26, 26, 26)
+                .addComponent(botonPanelModificar)
+                .addGap(18, 18, 18)
+                .addComponent(botonPanelEliminar)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(botonPanelModificar)
+                    .addComponent(botonPanelEliminar))
+                .addContainerGap(15, Short.MAX_VALUE))
+        );
+
         botonArchivo.setText("Archivo");
 
         botonSalir.setText("Salir");
@@ -111,12 +228,27 @@ public class JFrame extends javax.swing.JFrame {
         botonOperaciones.add(botonAgregar);
 
         botonModificar.setText("Modificar");
+        botonModificar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botonModificarActionPerformed(evt);
+            }
+        });
         botonOperaciones.add(botonModificar);
 
         botonEliminar.setText("Eliminar");
+        botonEliminar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botonEliminarActionPerformed(evt);
+            }
+        });
         botonOperaciones.add(botonEliminar);
 
         botonBuscar.setText("Buscar Por Nombre");
+        botonBuscar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botonBuscarActionPerformed(evt);
+            }
+        });
         botonOperaciones.add(botonBuscar);
 
         botonListar.setText("Listar por Categoría");
@@ -135,23 +267,97 @@ public class JFrame extends javax.swing.JFrame {
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
+            .addComponent(panel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 626, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, 511, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(panel, javax.swing.GroupLayout.DEFAULT_SIZE, 461, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
     private void botonAgregarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonAgregarActionPerformed
-        // TODO add your handling code here:
+        // Creamos paneles y campos de texto para el diálogo
+        JTextField nombreField = new JTextField(15);
+        JTextField cantidadField = new JTextField(5);
+        JTextField precioField = new JTextField(10);
+        JTextField categoriaField = new JTextField(15);
+
+        JPanel panel = new JPanel(new GridLayout(0, 2, 5, 5));
+        panel.add(new JLabel("Nombre:"));
+        panel.add(nombreField);
+        panel.add(new JLabel("Cantidad:"));
+        panel.add(cantidadField);
+        panel.add(new JLabel("Precio:"));
+        panel.add(precioField);
+        panel.add(new JLabel("Categoría:"));
+        panel.add(categoriaField);
+
+        int result = JOptionPane.showConfirmDialog(this, panel, "Agregar Nuevo Producto",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                String nombre = nombreField.getText();
+                int cantidad = Integer.parseInt(cantidadField.getText());
+                double precio = Double.parseDouble(precioField.getText());
+                String categoria = categoriaField.getText();
+
+                if (nombre.trim().isEmpty() || categoria.trim().isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Nombre y categoría no pueden estar vacíos.", "Error de Entrada", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+                if (cantidad < 0 || precio < 0) {
+                    JOptionPane.showMessageDialog(this, "Cantidad y precio no pueden ser negativos.", "Error de Entrada", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+                Producto nuevoProducto = new Producto(nombre, categoria, precio, cantidad);
+                gestor.agregarProducto(nuevoProducto);
+                actualizarTabla();
+                JOptionPane.showMessageDialog(this, "Producto agregado exitosamente.");
+
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(this, "Por favor, ingrese valores numéricos válidos para cantidad y precio.", "Error de Formato", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }//GEN-LAST:event_botonAgregarActionPerformed
 
     private void botonListarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonListarActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_botonListarActionPerformed
+
+    private void botonPanelEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonPanelEliminarActionPerformed
+        eliminarProductoAccion();
+    }//GEN-LAST:event_botonPanelEliminarActionPerformed
+
+    private void botonPanelModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonPanelModificarActionPerformed
+        editarProductoAccion();
+    }//GEN-LAST:event_botonPanelModificarActionPerformed
+
+    private void botonModificarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonModificarActionPerformed
+        editarProductoAccion();
+    }//GEN-LAST:event_botonModificarActionPerformed
+
+    private void botonEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonEliminarActionPerformed
+        eliminarProductoAccion();
+    }//GEN-LAST:event_botonEliminarActionPerformed
+
+    private void botonBuscarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonBuscarActionPerformed
+        Buscar ventanaBuscar = new Buscar(
+                this,
+                true,
+                gestor,
+                modeloTabla,
+                tablaInventario
+        ); // 'this' es la ventana Main
+        ventanaBuscar.setVisible(true);
+    }//GEN-LAST:event_botonBuscarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -197,7 +403,10 @@ public class JFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem botonListar;
     private javax.swing.JMenuItem botonModificar;
     private javax.swing.JMenu botonOperaciones;
+    private javax.swing.JButton botonPanelEliminar;
+    private javax.swing.JButton botonPanelModificar;
     private javax.swing.JMenuItem botonSalir;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane panel;
     private javax.swing.JTable tablaInventario;
     // End of variables declaration//GEN-END:variables
