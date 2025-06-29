@@ -1,2 +1,2 @@
-Prueba;Prueba;12.0;12
-Prueba2;Prueba2;120.0;12
+Camisa Adidas;Ropa;900.0;100
+Zapatos negros;Zapatos;120.0;12

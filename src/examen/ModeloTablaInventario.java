@@ -10,7 +10,7 @@ import javax.swing.table.AbstractTableModel;
 
 /**
  *
- * @author joseacosta
+ * @author joseacosta y victor
  */
 public class ModeloTablaInventario extends AbstractTableModel {
     private ArrayList<Producto> inventario;

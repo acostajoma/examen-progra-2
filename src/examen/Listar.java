@@ -4,27 +4,52 @@
  */
 package examen;
 
-import javax.swing.JTable;
+import javax.swing.JButton;
+import javax.swing.JOptionPane;
+import javax.swing.RowFilter;
+import javax.swing.table.TableRowSorter;
 
 /**
  *
- * @author joseacosta
+ * @author joseacosta y victor
  */
 public class Listar extends javax.swing.JDialog {
 
     private GestorInventario gestor;
-    private  ModeloTablaInventario modelo;
-    private JTable tabla;
+    private TableRowSorter<ModeloTablaInventario> filtroTabla;
+    private JButton botonEliminarFiltro;
+    
 
-    public Listar(java.awt.Frame parent, boolean modal, GestorInventario gestor) {
+    public Listar(java.awt.Frame parent, boolean modal, GestorInventario gestor, TableRowSorter<ModeloTablaInventario> filtroTabla, JButton botonEliminarFiltro) {
         super(parent, modal);
         this.gestor = gestor;
-        this.modelo= modelo;
-        this.tabla = tabla;
+        this.filtroTabla = filtroTabla;
+        this.botonEliminarFiltro = botonEliminarFiltro;
         initComponents();
         this.setLocationRelativeTo(parent);
     }
 
+    
+    private void ejecutarFiltro(){
+        String textoFiltro = barraFiltrar.getText();
+        // ' Ejemplo ' => 'Ejemplo'
+        if(textoFiltro.trim().length() == 0){
+            // Si texto viene vacio seteamos filtro a null
+            filtroTabla.setRowFilter(null);
+            JOptionPane.showMessageDialog(null, "Agrega un filtro valido.");
+            
+            
+            botonEliminarFiltro.setVisible(false);
+      
+            
+        }else {
+            // (?i) hace que la búsqueda no distinga entre mayúsculas y minúsculas
+            filtroTabla.setRowFilter(RowFilter.regexFilter("(?i)" + textoFiltro));
+            JOptionPane.showMessageDialog(null, "Se ha filtrado los resultados.");
+            this.dispose();
+            botonEliminarFiltro.setVisible(true);
+        }
+    }
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -75,7 +100,7 @@ public class Listar extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void botonFiltrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonFiltrarActionPerformed
-        // TODO add your handling code here:
+        ejecutarFiltro();
     }//GEN-LAST:event_botonFiltrarActionPerformed
 
 

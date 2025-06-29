@@ -15,7 +15,7 @@ import javax.swing.JOptionPane;
 
 /**
  *
- * @author joseacosta
+ * @author joseacosta y victor
  */
 public class GestorInventario {
 

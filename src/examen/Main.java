@@ -6,7 +6,7 @@ package examen;
 
 /**
  *
- * @author joseacosta
+ * @author joseacosta y victor
  */
 public class Main {
 

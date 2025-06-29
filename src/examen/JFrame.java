@@ -4,23 +4,26 @@
  */
 package examen;
 
+import examen.GestorInventario;
+import examen.ModeloTablaInventario;
 import java.awt.GridLayout;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.table.TableRowSorter;
 
 /**
  *
- * @author joseacosta
+ * @author joseacosta y victor
  */
 public class JFrame extends javax.swing.JFrame {
 
     private GestorInventario gestor; // Declaramos la clase de gestor
     private ModeloTablaInventario modeloTabla; // Declaramos la clase de la tabla
-
+    private TableRowSorter<ModeloTablaInventario> filtro;
     /**
      * Creates new form JFrame
      */
@@ -28,30 +31,26 @@ public class JFrame extends javax.swing.JFrame {
         gestor = new GestorInventario("inventario.txt");
 
         initComponents();
-        configurarTabla();
-
-        this.setTitle("Gestor de Inventario Principal");
-        this.setLocationRelativeTo(null);
-
-        actualizarTabla();
-    }
-
-    /**
-     * Configura el JTable y le asigna el modelo.
-     */
-    private void configurarTabla() {
+        
         modeloTabla = new ModeloTablaInventario(gestor.getInventario());
         tablaInventario.setModel(modeloTabla);
         // Permitir seleccionar solo una fila a la vez
         tablaInventario.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        TableRowSorter<ModeloTablaInventario> filtro = new TableRowSorter<>(modeloTabla);
+        filtro = new TableRowSorter<>(modeloTabla);
         tablaInventario.setRowSorter(filtro);
+        botonEliminarFiltro.setVisible(false);
+
+        this.setTitle("Gestor de Inventario Principal");
+        this.setLocationRelativeTo(null);
+        
+        actualizarTabla();
     }
+
 
     public final void actualizarTabla() {
         modeloTabla.fireTableDataChanged();
     }
-
+    
     /**
      * Lógica para editar un producto. Se activa desde el botón de la tabla.
      *
@@ -150,6 +149,7 @@ public class JFrame extends javax.swing.JFrame {
         jPanel1 = new javax.swing.JPanel();
         botonPanelModificar = new javax.swing.JButton();
         botonPanelEliminar = new javax.swing.JButton();
+        botonEliminarFiltro = new javax.swing.JButton();
         barraSuperior = new javax.swing.JMenuBar();
         botonArchivo = new javax.swing.JMenu();
         botonSalir = new javax.swing.JMenuItem();
@@ -189,6 +189,13 @@ public class JFrame extends javax.swing.JFrame {
             }
         });
 
+        botonEliminarFiltro.setText("Eliminar Filtro");
+        botonEliminarFiltro.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botonEliminarFiltroActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -198,6 +205,8 @@ public class JFrame extends javax.swing.JFrame {
                 .addComponent(botonPanelModificar)
                 .addGap(18, 18, 18)
                 .addComponent(botonPanelEliminar)
+                .addGap(18, 18, 18)
+                .addComponent(botonEliminarFiltro)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel1Layout.setVerticalGroup(
@@ -206,13 +215,19 @@ public class JFrame extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(botonPanelModificar)
-                    .addComponent(botonPanelEliminar))
+                    .addComponent(botonPanelEliminar)
+                    .addComponent(botonEliminarFiltro))
                 .addContainerGap(15, Short.MAX_VALUE))
         );
 
         botonArchivo.setText("Archivo");
 
         botonSalir.setText("Salir");
+        botonSalir.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botonSalirActionPerformed(evt);
+            }
+        });
         botonArchivo.add(botonSalir);
 
         barraSuperior.add(botonArchivo);
@@ -329,7 +344,14 @@ public class JFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_botonAgregarActionPerformed
 
     private void botonListarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonListarActionPerformed
-        // TODO add your handling code here:
+        Listar ventanaListar = new Listar(
+                this,
+                true,
+                gestor, 
+                filtro,
+                botonEliminarFiltro
+        );
+        ventanaListar.setVisible(true);
     }//GEN-LAST:event_botonListarActionPerformed
 
     private void botonPanelEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonPanelEliminarActionPerformed
@@ -358,6 +380,15 @@ public class JFrame extends javax.swing.JFrame {
         ); // 'this' es la ventana Main
         ventanaBuscar.setVisible(true);
     }//GEN-LAST:event_botonBuscarActionPerformed
+
+    private void botonEliminarFiltroActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonEliminarFiltroActionPerformed
+        filtro.setRowFilter(null);
+        botonEliminarFiltro.setVisible(false);
+    }//GEN-LAST:event_botonEliminarFiltroActionPerformed
+
+    private void botonSalirActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonSalirActionPerformed
+        System.exit(0);
+    }//GEN-LAST:event_botonSalirActionPerformed
 
     /**
      * @param args the command line arguments
@@ -400,6 +431,7 @@ public class JFrame extends javax.swing.JFrame {
     private javax.swing.JMenu botonArchivo;
     private javax.swing.JMenuItem botonBuscar;
     private javax.swing.JMenuItem botonEliminar;
+    private javax.swing.JButton botonEliminarFiltro;
     private javax.swing.JMenuItem botonListar;
     private javax.swing.JMenuItem botonModificar;
     private javax.swing.JMenu botonOperaciones;

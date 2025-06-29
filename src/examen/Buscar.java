@@ -9,7 +9,7 @@ import javax.swing.JTable;
 
 /**
  *
- * @author joseacosta
+ * @author joseacosta y victor
  */
 public class Buscar extends javax.swing.JDialog {
 
